@@ -2,8 +2,8 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
 var statsEnabled = false, container, stats;
 var camera, scene, renderer, poptart, face, feet, tail;
-var stars, numStars=40, rainbow, rainChunk, numRainChunks=50;
-var starMaxX = 400;
+var stars, numStars, rainbow, rainChunk, numRainChunks=50;
+var starMaxX = 700;
 var mouseX = 0, mouseY = 0;
 var windowHalfX = window.innerWidth / 2;
 var windowHalfY = window.innerHeight / 2;
@@ -11,6 +11,8 @@ var clock = new THREE.Clock(), deltaSum=0, tick=0, frame=0, running=true;
 var song = document.createElement('audio'), song2 = document.createElement('audio');
 var cameraDepth = 100;
 var controls;
+
+numStars = starMaxX / 15;
 
 init();
 
@@ -30,7 +32,7 @@ function init() {
   camera.position.y = 0;
 
   scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2( 0x003366, 0.015 * (30/cameraDepth)  );
+ // scene.fog = new THREE.FogExp2( 0x003366, 0.015 * (30/cameraDepth)  );
   
   scene.add(camera);
   
@@ -59,7 +61,8 @@ function init() {
   for(var c=0;c<numRainChunks-1;c++){
     var yOffset=8;
     if(c%2==1) yOffset=7;
-    var xOffset=(-c*8) - 8.25;
+    var xOffset=(-c*8) - 16.5;
+    var d = numRainChunks - c;
     create( rainbow,xOffset,yOffset,    0, 8, 3, 1, 0xff0000);
     create( rainbow,xOffset,yOffset-3,  0, 8, 3, 1, 0xff9900);
     create( rainbow,xOffset,yOffset-6,  0, 8, 3, 1, 0xffff00);
@@ -69,7 +72,6 @@ function init() {
   }
   cat.add(rainbow);
   scene.add(cat);
-  //cat.position.x+=120;
   
   rainChunk=new THREE.Object3D();
   create( rainChunk, -16.5,  7,  0, 8,  3,   1, 0xff0000);
@@ -87,9 +89,9 @@ function init() {
     stars.push(new Array());
     for(var c=0;c<numStars;c++){
       var star = new THREE.Object3D();
-      star.position.x=Math.random() * starMaxX - 100;
-      star.position.y=Math.random() * starMaxX - 100;
-      star.position.z=Math.random() * starMaxX - 100;
+      star.position.x=Math.random() * starMaxX - starMaxX/2;
+      star.position.y=Math.random() * starMaxX/2 - starMaxX/4;
+      star.position.z=Math.random() * starMaxX/2 - starMaxX/4;
       createStar(star, state);
       scene.add( star );
       stars[state].push(star);
@@ -104,7 +106,7 @@ function init() {
   pointLight.position.z = -1000;
   scene.add(pointLight);
   
-  renderer = new THREE.WebGLRenderer({ alpha: true });
+  renderer = new THREE.WebGLRenderer({ alpha: true , antialias: true });
   renderer.setSize( window.innerWidth, window.innerHeight );
   container.appendChild( renderer.domElement );
 
@@ -134,7 +136,7 @@ function init() {
 
 //		object	   x    y    z    w    h    d	  color
 function create(o, x, y, z, w, h, d, c){
-  var material = new THREE.MeshLambertMaterial( { color: c} );
+  var material = new THREE.MeshLambertMaterial( { color: c } );
   var geometry = new THREE.BoxGeometry(w, h, d, 1, 1, 1);
   var mesh = new THREE.Mesh( geometry, material );
   mesh.position.x=x+(w/2);
@@ -351,10 +353,10 @@ function render() {
         star.position.y=star2.position.y;
         star.position.z=star2.position.z;
         
-        if(star.position.x<-starMaxX){
-          star.position.x+=starMaxX+100;
-          star.position.y = Math.random() * starMaxX - 100;
-          star.position.z = Math.random() * starMaxX - 100;
+        if(star.position.x<-starMaxX/2){
+          star.position.x += starMaxX;
+          star.position.y = Math.random() * starMaxX/2 - starMaxX/4;
+          star.position.z = Math.random() * starMaxX/2 - starMaxX/4;
         }
       }
       stars[0][c].position.x=tempX;
