@@ -116,6 +116,9 @@ function init() {
     stats.domElement.style.zIndex = 100;
     container.appendChild( stats.domElement );
   }
+  
+  window.addEventListener( 'resize', onWindowResize, false );
+  
 }
 
 //		object	   x    y    z    w    h    d	  color
@@ -293,6 +296,19 @@ function onDocumentMouseDown(event) {
     song.pause();
     song2.play();
   }
+}
+
+function onWindowResize() {
+
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+
+  renderer.setSize( window.innerWidth, window.innerHeight );
+
+  controls.handleResize();
+
+  render();
+
 }
 
 function animate() {
