@@ -13,7 +13,6 @@ var cameraDepth = 100;
 var controls;
 
 init();
-animate();
 
 function init() {
 
@@ -25,7 +24,6 @@ function init() {
   container = document.createElement( 'div' );
   document.body.appendChild( container );
 
-  //camera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, -500, 1000 );
   camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, .1, 10000 );
   camera.position.z = cameraDepth;
   camera.position.x = 0;
@@ -48,21 +46,20 @@ function init() {
   controls.addEventListener( 'change', render );
   
   //CAT
+  var cat = group = new THREE.Object3D();
   poptart = createPoptart();
-  scene.add( poptart );
+  cat.add( poptart );
   feet = createFeet();
-  scene.add( feet );
+  cat.add( feet );
   tail = createTail();
-  scene.add( tail );
+  cat.add( tail );
   face = createFace();
-  scene.add(face);
-  
-  //RAINBOW
+  cat.add(face);
   rainbow=new THREE.Object3D();
   for(var c=0;c<numRainChunks-1;c++){
     var yOffset=8;
     if(c%2==1) yOffset=7;
-    var xOffset=(-c*8)-16.5;
+    var xOffset=(-c*8) - 8.25;
     create( rainbow,xOffset,yOffset,    0, 8, 3, 1, 0xff0000);
     create( rainbow,xOffset,yOffset-3,  0, 8, 3, 1, 0xff9900);
     create( rainbow,xOffset,yOffset-6,  0, 8, 3, 1, 0xffff00);
@@ -70,7 +67,9 @@ function init() {
     create( rainbow,xOffset,yOffset-12, 0, 8, 3, 1, 0x0099ff);
     create( rainbow,xOffset,yOffset-15, 0, 8, 3, 1, 0x6633ff);
   }
-  scene.add( rainbow );
+  cat.add(rainbow);
+  scene.add(cat);
+  //cat.position.x+=120;
   
   rainChunk=new THREE.Object3D();
   create( rainChunk, -16.5,  7,  0, 8,  3,   1, 0xff0000);
@@ -117,7 +116,19 @@ function init() {
     container.appendChild( stats.domElement );
   }
   
+  document.addEventListener( 'mousedown', stopPlay, false );
+  document.addEventListener( 'mouseup', startPlay, false );
+  var scrollTimer;
+  document.addEventListener( 'mousewheel', function(){
+    stopPlay();
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(function() {
+        startPlay();
+    }, 250);
+  }, false );
   window.addEventListener( 'resize', onWindowResize, false );
+  
+  animate();
   
 }
 
@@ -288,14 +299,19 @@ function createStar(star, state) {
 }
 
 function onDocumentMouseDown(event) {
-  running=!running;
-  if(running){
-    song.play();
-    song2.pause();
-  }else{
-    song.pause();
-    song2.play();
-  }
+  togglePlay();
+}
+
+function startPlay(){
+  running = true;
+  song.play();
+  song2.pause();
+}
+
+function stopPlay(){
+  running = false;
+  song.pause();
+  song2.play();
 }
 
 function onWindowResize() {
@@ -409,6 +425,5 @@ function render() {
     }
   }
   var timer = Date.now() * 0.0001;
-  //camera.lookAt( scene.position );
   renderer.render( scene, camera );
 }
