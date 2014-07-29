@@ -2,19 +2,21 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
 var statsEnabled = false, container, stats;
 var camera, scene, renderer, poptart, face, feet, tail;
-var stars, numStars=40, rainbow, rainChunk, numRainChunks=30;
+var stars, numStars=40, rainbow, rainChunk, numRainChunks=50;
 var starMaxX = 400;
 var mouseX = 0, mouseY = 0;
 var windowHalfX = window.innerWidth / 2;
 var windowHalfY = window.innerHeight / 2;
 var clock = new THREE.Clock(), deltaSum=0, tick=0, frame=0, running=true;
 var song = document.createElement('audio'), song2 = document.createElement('audio');
-var cameraDepth = 60;
+var cameraDepth = 100;
+var controls;
 
 init();
 animate();
 
 function init() {
+
   song.setAttribute('src', 'audio/nyanlooped.mp3');
   song.setAttribute('loop', 'true');
   song2.setAttribute('src', 'audio/nyanslow.mp3');
@@ -23,13 +25,27 @@ function init() {
   container = document.createElement( 'div' );
   document.body.appendChild( container );
 
-  camera = new THREE.PerspectiveCamera( 45,
-    window.innerWidth / window.innerHeight, .1, 10000 );
+  //camera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, -500, 1000 );
+  camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, .1, 10000 );
   camera.position.z = cameraDepth;
   camera.position.x = 0;
   camera.position.y = 0;
+
   scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2( 0x003366, 0.0125 * (30/cameraDepth)  );
+  scene.fog = new THREE.FogExp2( 0x003366, 0.015 * (30/cameraDepth)  );
+  
+  scene.add(camera);
+  
+  controls = new THREE.TrackballControls( camera );
+  controls.rotateSpeed = 1.0;
+  controls.zoomSpeed = 1.2;
+  controls.panSpeed = 0.8;
+  controls.noZoom = false;
+  controls.noPan = false;
+  controls.staticMoving = true;
+  controls.dynamicDampingFactor = 0.3;
+  controls.keys = [ 65, 83, 68 ];
+  controls.addEventListener( 'change', render );
   
   //CAT
   poptart = createPoptart();
@@ -80,10 +96,16 @@ function init() {
       stars[state].push(star);
     }
   }
+  
   var pointLight = new THREE.PointLight( 0xFFFFFF );
   pointLight.position.z = 1000;
   scene.add(pointLight);
-  renderer = new THREE.WebGLRenderer();
+  
+  var pointLight = new THREE.PointLight( 0xFFFFFF );
+  pointLight.position.z = -1000;
+  scene.add(pointLight);
+  
+  renderer = new THREE.WebGLRenderer({ alpha: true });
   renderer.setSize( window.innerWidth, window.innerHeight );
   container.appendChild( renderer.domElement );
 
@@ -99,7 +121,7 @@ function init() {
 //		object	   x    y    z    w    h    d	  color
 function create(o, x, y, z, w, h, d, c){
   var material = new THREE.MeshLambertMaterial( { color: c} );
-  var geometry = new THREE.CubeGeometry(w, h, d, 1, 1, 1);
+  var geometry = new THREE.BoxGeometry(w, h, d, 1, 1, 1);
   var mesh = new THREE.Mesh( geometry, material );
   mesh.position.x=x+(w/2);
   mesh.position.y=y-(h/2);
@@ -275,6 +297,7 @@ function onDocumentMouseDown(event) {
 
 function animate() {
   requestAnimationFrame( animate );
+  controls.update();
   render();
   if ( statsEnabled ) stats.update();
 }
@@ -369,6 +392,7 @@ function render() {
         break;
     }
   }
-  camera.lookAt( scene.position );
+  var timer = Date.now() * 0.0001;
+  //camera.lookAt( scene.position );
   renderer.render( scene, camera );
 }
